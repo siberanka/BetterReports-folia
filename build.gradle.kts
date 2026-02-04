@@ -26,11 +26,11 @@ import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 
 plugins {
     java
-    id("org.ajoberstar.grgit") version "4.1.1"
-    id("com.github.johnrengelman.shadow") version "7.0.0"
-    id("io.freefair.lombok") version "6.0.0-m2"
-    id("net.kyori.indra") version "2.0.4" apply false
-    id("net.kyori.indra.git") version "2.0.4"
+    id("org.ajoberstar.grgit") version "5.2.2"
+    id("io.github.goooler.shadow") version "8.1.7"
+    id("io.freefair.lombok") version "8.6"
+    id("net.kyori.indra") version "3.1.3" apply false
+    id("net.kyori.indra.git") version "3.1.3"
 }
 
 group = "dev.austech"
@@ -38,28 +38,26 @@ version = "2.0.7"
 
 repositories {
     mavenLocal()
+    mavenCentral()
     maven {
-        url = uri("https://hub.spigotmc.org/nexus/content/repositories/snapshots/")
+        url = uri("https://repo.papermc.io/repository/maven-public/")
     }
-
     maven {
         url = uri("https://oss.sonatype.org/content/groups/public/")
     }
-
-    maven {
-        url = uri("https://repo.maven.apache.org/maven2/")
-    }
-
     maven {
         url = uri("https://repo.helpch.at/releases")
     }
 }
 
 dependencies {
-    compileOnly("org.spigotmc:spigot-api:1.12-R0.1-SNAPSHOT")
+    compileOnly("io.papermc.paper:paper-api:1.21.4-R0.1-SNAPSHOT")
+    compileOnly("dev.folia:folia-api:1.20.1-R0.1-SNAPSHOT")
     compileOnly("me.clip:placeholderapi:2.11.6")
     compileOnly("org.jetbrains:annotations:23.0.0")
     implementation("org.bstats:bstats-bukkit:3.0.0")
+    implementation("com.google.guava:guava:32.1.2-jre")
+    implementation("com.google.code.gson:gson:2.10.1")
 }
 
 
@@ -96,7 +94,7 @@ ext {
 
 java {
     toolchain {
-        languageVersion.set(JavaLanguageVersion.of(8))
+        languageVersion.set(JavaLanguageVersion.of(21))
     }
 }
 

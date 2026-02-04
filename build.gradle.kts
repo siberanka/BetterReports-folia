@@ -34,7 +34,7 @@ plugins {
 }
 
 group = "dev.austech"
-version = "2.0.7"
+version = "3.0.0"
 
 repositories {
     mavenLocal()
@@ -139,3 +139,4 @@ tasks.named("build") {
     dependsOn("shadowJar")
     dependsOn("copyJars")
 }
+

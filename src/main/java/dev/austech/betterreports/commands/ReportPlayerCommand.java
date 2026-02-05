@@ -43,7 +43,8 @@ import static dev.austech.betterreports.model.report.ReportManager.checkCooldown
 
 public class ReportPlayerCommand implements CommandExecutor {
     @Override
-    public boolean onCommand(final CommandSender sender, final Command command, final String label, final String[] args) {
+    public boolean onCommand(final CommandSender sender, final Command command, final String label,
+            final String[] args) {
         if (!sender.hasPermission("betterreports.use.player")) {
             MainConfig.Values.LANG_NO_PERMISSION.send(sender);
             return true;
@@ -85,24 +86,32 @@ public class ReportPlayerCommand implements CommandExecutor {
             return true;
         }
 
-        final OfflinePlayer target = OfflinePlayerUtil.get(args[0]);
+        final Player playerSender = (Player) sender;
+        final String targetName = args[0];
+        final String reason = String.join(" ", Arrays.asList(args).subList(1, args.length));
 
-        if (target == null) {
-            MainConfig.Values.LANG_PLAYER_NOT_FOUND.send(sender);
-            return true;
-        }
+        Bukkit.getAsyncScheduler().runNow(BetterReports.getInstance(), (task) -> {
+            final OfflinePlayer target = OfflinePlayerUtil.get(targetName);
 
-        final Report report = Report.builder()
-                .type(Report.Type.PLAYER)
-                .creator(((Player) sender))
-                .reason(String.join(" ", Arrays.asList(args).subList(1, args.length)))
-                .target(target)
-                .build();
+            playerSender.getScheduler().run(BetterReports.getInstance(), (st) -> {
+                if (target == null) {
+                    MainConfig.Values.LANG_PLAYER_NOT_FOUND.send(playerSender);
+                    return;
+                }
 
-        if (MainConfig.Values.PLAYER_REPORT_MENUS_CONFIRM_REPORT.getBoolean())
-            new ConfirmReportMenu(((Player) sender), report).open(((Player) sender));
-        else
-            report.save();
+                final Report report = Report.builder()
+                        .type(Report.Type.PLAYER)
+                        .creator(playerSender)
+                        .reason(reason)
+                        .target(target)
+                        .build();
+
+                if (MainConfig.Values.PLAYER_REPORT_MENUS_CONFIRM_REPORT.getBoolean())
+                    new ConfirmReportMenu(playerSender, report).open(playerSender);
+                else
+                    report.save();
+            }, null);
+        });
 
         return true;
     }

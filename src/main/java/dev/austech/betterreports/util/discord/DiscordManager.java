@@ -61,7 +61,8 @@ public class DiscordManager {
         final String MESSAGES_SUCCESS = MainConfig.Values.valueOf(prefix + "_MESSAGES_SUCCESS").getString();
 
         if (WEBHOOK_URI.equalsIgnoreCase(MainConfig.Values.DEFAULT_URI)) {
-            final String message = Common.color("&cYou must change the webhook url in the config.yml in order for the webhook to be successfully sent to Discord. Should you require assistance, please join our Discord server: &nhttps://austech.dev/to/support/");
+            final String message = Common.color(
+                    "&cYou must change the webhook url in the config.yml in order for the webhook to be successfully sent to Discord. Should you require assistance, please join our Discord server: &nhttps://austech.dev/to/support/");
             Common.log(message);
 
             if (player.hasPermission("betterreports.admin")) {
@@ -77,34 +78,44 @@ public class DiscordManager {
             builder.content(PING_VALUE);
         }
 
+        // Send Webhook Async
         Bukkit.getAsyncScheduler().runNow(BetterReports.getInstance(), (task) -> {
             try {
                 final Webhook webhook = builder.build();
                 webhook.send(WEBHOOK_URI);
-
-                Arrays.stream(Common.color(PlaceholderUtil.applyPlaceholders(report, MESSAGES_SUCCESS)).split("\\n")).forEach(player::sendMessage);
-
-                Arrays.stream(Common.color(PlaceholderUtil.applyPlaceholders(report, MESSAGES_NEW_REPORT)).split("\\n")).forEach((s) ->
-                        Bukkit.getOnlinePlayers()
-                                .stream()
-                                .filter(p -> p.hasPermission("betterreports.alerts"))
-                                .forEach(p -> p.sendMessage(s))
-                );
-
-                GuiConfig.Values.SOUNDS_REPORT_SUCCESS.playSound(player);
-
-                if (BetterReports.getInstance().getCounter() != null) {
-                    if (!report.isPlayer()) {
-                        BetterReports.getInstance().getCounter().incrementBug();
-                    } else {
-                        BetterReports.getInstance().getCounter().incrementPlayer();
-                    }
-                }
             } catch (final Exception e) {
                 e.printStackTrace();
-                BetterReports.getInstance().getLogger().severe("This error generally indicates an incorrect setup. Please check your config.yml. If the issue persists, please join our Discord server: https://austech.dev/to/support/");
-                BetterReports.getInstance().getLogger().severe("Make sure to set the Discord Webhook URL in BOTH the player and bug report sections in config.yml.");
+                BetterReports.getInstance().getLogger().severe(
+                        "This error generally indicates an incorrect setup. Please check your config.yml. If the issue persists, please join our Discord server: https://austech.dev/to/support/");
+                BetterReports.getInstance().getLogger().severe(
+                        "Make sure to set the Discord Webhook URL in BOTH the player and bug report sections in config.yml.");
                 MainConfig.Values.LANG_ERROR.send(player);
+            }
+        });
+
+        // Send In-Game Messages & Sounds on Global Region Scheduler (Safe for Folia)
+        Bukkit.getGlobalRegionScheduler().runNow(BetterReports.getInstance(), (task) -> {
+            // Send to creator
+            Arrays.stream(Common.color(PlaceholderUtil.applyPlaceholders(report, MESSAGES_SUCCESS)).split("\\n"))
+                    .forEach(player::sendMessage);
+
+            // Send to admins
+            Arrays.stream(Common.color(PlaceholderUtil.applyPlaceholders(report, MESSAGES_NEW_REPORT)).split("\\n"))
+                    .forEach((s) -> Bukkit.getOnlinePlayers()
+                            .stream()
+                            .filter(p -> p.hasPermission("betterreports.alerts"))
+                            .forEach(p -> p.sendMessage(s)));
+
+            // Play sound
+            GuiConfig.Values.SOUNDS_REPORT_SUCCESS.playSound(player);
+
+            // Increment counter
+            if (BetterReports.getInstance().getCounter() != null) {
+                if (!report.isPlayer()) {
+                    BetterReports.getInstance().getCounter().incrementBug();
+                } else {
+                    BetterReports.getInstance().getCounter().incrementPlayer();
+                }
             }
         });
     }
@@ -120,20 +131,28 @@ public class DiscordManager {
 
         final String EMBED_AUTHOR_NAME = MainConfig.Values.valueOf(prefix + "_DISCORD_EMBED_AUTHOR_NAME").getString();
         final String EMBED_AUTHOR_URL = MainConfig.Values.valueOf(prefix + "_DISCORD_EMBED_AUTHOR_URL").getString();
-        final String EMBED_AUTHOR_ICON_URL = MainConfig.Values.valueOf(prefix + "_DISCORD_EMBED_AUTHOR_ICON_URL").getString();
+        final String EMBED_AUTHOR_ICON_URL = MainConfig.Values.valueOf(prefix + "_DISCORD_EMBED_AUTHOR_ICON_URL")
+                .getString();
         final String EMBED_BODY_TITLE = MainConfig.Values.valueOf(prefix + "_DISCORD_EMBED_BODY_TITLE").getString();
-        final String EMBED_BODY_TITLE_URL = MainConfig.Values.valueOf(prefix + "_DISCORD_EMBED_BODY_TITLE_URL").getString();
-        final String EMBED_BODY_DESCRIPTION = MainConfig.Values.valueOf(prefix + "_DISCORD_EMBED_BODY_DESCRIPTION").getString();
+        final String EMBED_BODY_TITLE_URL = MainConfig.Values.valueOf(prefix + "_DISCORD_EMBED_BODY_TITLE_URL")
+                .getString();
+        final String EMBED_BODY_DESCRIPTION = MainConfig.Values.valueOf(prefix + "_DISCORD_EMBED_BODY_DESCRIPTION")
+                .getString();
         final String EMBED_BODY_COLOR = MainConfig.Values.valueOf(prefix + "_DISCORD_EMBED_BODY_COLOR").getString();
-        final List<Map<?, ?>> DISCORD_EMBED_FIELDS = BetterReports.getInstance().getConfigManager().getMainConfig().getConfig().getMapList("reports." + report.getType().name().toLowerCase() + ".discord.embed.fields");
+        final List<Map<?, ?>> DISCORD_EMBED_FIELDS = BetterReports.getInstance().getConfigManager().getMainConfig()
+                .getConfig().getMapList("reports." + report.getType().name().toLowerCase() + ".discord.embed.fields");
         final String EMBED_IMAGES_IMAGE = MainConfig.Values.valueOf(prefix + "_DISCORD_EMBED_IMAGES_IMAGE").getString();
-        final String EMBED_IMAGES_THUMBNAIL = MainConfig.Values.valueOf(prefix + "_DISCORD_EMBED_IMAGES_THUMBNAIL").getString();
-        final boolean EMBED_FOOTER_TIMESTAMP = MainConfig.Values.valueOf(prefix + "_DISCORD_EMBED_FOOTER_TIMESTAMP").getBoolean();
+        final String EMBED_IMAGES_THUMBNAIL = MainConfig.Values.valueOf(prefix + "_DISCORD_EMBED_IMAGES_THUMBNAIL")
+                .getString();
+        final boolean EMBED_FOOTER_TIMESTAMP = MainConfig.Values.valueOf(prefix + "_DISCORD_EMBED_FOOTER_TIMESTAMP")
+                .getBoolean();
         final String EMBED_FOOTER_TEXT = MainConfig.Values.valueOf(prefix + "_DISCORD_EMBED_FOOTER_TEXT").getString();
-        final String EMBED_FOOTER_ICON_URL = MainConfig.Values.valueOf(prefix + "_DISCORD_EMBED_FOOTER_ICON_URL").getString();
+        final String EMBED_FOOTER_ICON_URL = MainConfig.Values.valueOf(prefix + "_DISCORD_EMBED_FOOTER_ICON_URL")
+                .getString();
 
         if (EMBED_AUTHOR_NAME != null) {
-            embed.author(Webhook.EmbedObject.Author.builder().name(ap(report, EMBED_AUTHOR_NAME)).url(ap(report, EMBED_AUTHOR_URL)).iconUrl(ap(report, EMBED_AUTHOR_ICON_URL)).build());
+            embed.author(Webhook.EmbedObject.Author.builder().name(ap(report, EMBED_AUTHOR_NAME))
+                    .url(ap(report, EMBED_AUTHOR_URL)).iconUrl(ap(report, EMBED_AUTHOR_ICON_URL)).build());
         }
 
         if (EMBED_BODY_TITLE != null) {
@@ -159,7 +178,8 @@ public class DiscordManager {
 
         if (DISCORD_EMBED_FIELDS != null) {
             DISCORD_EMBED_FIELDS.forEach(it -> {
-                embed.addField(ap(report, ((String) it.get("name"))), ap(report, ((String) it.get("value"))), ((Boolean) it.get("inline")));
+                embed.addField(ap(report, ((String) it.get("name"))), ap(report, ((String) it.get("value"))),
+                        ((Boolean) it.get("inline")));
             });
         }
 
@@ -180,7 +200,8 @@ public class DiscordManager {
 
         if (EMBED_FOOTER_TEXT != null) {
             if (EMBED_FOOTER_ICON_URL != null)
-                embed.footer(Webhook.EmbedObject.Footer.builder().text(ap(report, EMBED_FOOTER_TEXT)).iconUrl(ap(report, EMBED_FOOTER_ICON_URL)).build());
+                embed.footer(Webhook.EmbedObject.Footer.builder().text(ap(report, EMBED_FOOTER_TEXT))
+                        .iconUrl(ap(report, EMBED_FOOTER_ICON_URL)).build());
             else
                 embed.footer(Webhook.EmbedObject.Footer.builder().text(ap(report, EMBED_FOOTER_TEXT)).build());
 

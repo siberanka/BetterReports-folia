@@ -33,6 +33,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
@@ -45,7 +46,16 @@ public class ReportManager {
     private static final HashMap<UUID, HashMap<Report.Type, Long>> cooldowns = new HashMap<>();
 
     @Getter
-    private final List<Report> reports = new ArrayList<>();
+    private final List<Report> reports = Collections.synchronizedList(new ArrayList<>());
+
+    private static final int MAX_REPORTS = 1000;
+
+    public synchronized void addReport(Report report) {
+        if (reports.size() >= MAX_REPORTS) {
+            reports.remove(0);
+        }
+        reports.add(report);
+    }
 
     public static boolean checkCooldown(final Player player, final Report.Type type) {
         final long cooldown = ReportManager.getInstance().getCooldown(player, type);
@@ -72,15 +82,20 @@ public class ReportManager {
         return MainConfig.Values.PLAYER_REPORT_ENABLED.getBoolean();
     }
 
-    public long getCooldown(final UUID uuid, final Report.Type type) {
-        if (Bukkit.getPlayer(uuid).hasPermission("betterreports.cooldown.bypass")) return -1L;
-        if (!MainConfig.Values.valueOf(type.name().toUpperCase() + "_REPORT_COOLDOWN_ENABLED").getBoolean()) return -1;
-        if (!cooldowns.containsKey(uuid)) return -1L;
-        if (!cooldowns.get(uuid).containsKey(type)) return -1L;
+    public synchronized long getCooldown(final UUID uuid, final Report.Type type) {
+        if (Bukkit.getPlayer(uuid).hasPermission("betterreports.cooldown.bypass"))
+            return -1L;
+        if (!MainConfig.Values.valueOf(type.name().toUpperCase() + "_REPORT_COOLDOWN_ENABLED").getBoolean())
+            return -1;
+        if (!cooldowns.containsKey(uuid))
+            return -1L;
+        if (!cooldowns.get(uuid).containsKey(type))
+            return -1L;
 
         final long time = System.currentTimeMillis();
         final long cooldown = cooldowns.get(uuid).get(type);
-        final long cooldownTime = MainConfig.Values.valueOf(type.name().toUpperCase() + "_REPORT_COOLDOWN_TIME").getInteger() * 1000L;
+        final long cooldownTime = MainConfig.Values.valueOf(type.name().toUpperCase() + "_REPORT_COOLDOWN_TIME")
+                .getInteger() * 1000L;
 
         if (time - cooldown >= cooldownTime) {
             return -1L;
@@ -89,19 +104,20 @@ public class ReportManager {
         }
     }
 
-    public long getCooldown(final Player player, final Report.Type type) {
-        if (player.hasPermission("betterreports.cooldown.bypass")) return -1L;
+    public synchronized long getCooldown(final Player player, final Report.Type type) {
+        if (player.hasPermission("betterreports.cooldown.bypass"))
+            return -1L;
         return getCooldown(player.getUniqueId(), type);
     }
 
-    public void addCooldown(final UUID uuid, final Report.Type type) {
+    public synchronized void addCooldown(final UUID uuid, final Report.Type type) {
         if (!cooldowns.containsKey(uuid)) {
             cooldowns.put(uuid, new HashMap<>());
         }
         cooldowns.get(uuid).put(type, System.currentTimeMillis());
     }
 
-    public void addCooldown(final Player player, final Report.Type type) {
+    public synchronized void addCooldown(final Player player, final Report.Type type) {
         addCooldown(player.getUniqueId(), type);
     }
 }

@@ -57,7 +57,10 @@ public class InputListener implements Listener {
 
         event.setCancelled(true);
 
-        final String input = PlainTextComponentSerializer.plainText().serialize(event.message());
+        String input = PlainTextComponentSerializer.plainText().serialize(event.message());
+        if (input.length() > 256) {
+            input = input.substring(0, 256);
+        }
         final Consumer<String> callback = WAITING_INPUT.remove(player.getUniqueId());
 
         if (Arrays.stream(ESCAPE_SEQUENCES).anyMatch(input::equalsIgnoreCase)) {

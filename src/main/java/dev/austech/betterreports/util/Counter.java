@@ -28,6 +28,8 @@ import dev.austech.betterreports.BetterReports;
 import lombok.Getter;
 import org.bukkit.Bukkit;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -39,30 +41,31 @@ public class Counter {
     final File file = new File(BetterReports.getInstance().getDataFolder(), "counter.db");
 
     @Getter
-    private int globalCounter = 1;
+    private final AtomicInteger globalCounter = new AtomicInteger(1);
 
     @Getter
-    private int bugCounter = 1;
+    private final AtomicInteger bugCounter = new AtomicInteger(1);
 
     @Getter
-    private int playerCounter = 1;
+    private final AtomicInteger playerCounter = new AtomicInteger(1);
 
     public void incrementBug() {
-        globalCounter++;
-        bugCounter++;
+        globalCounter.incrementAndGet();
+        bugCounter.incrementAndGet();
         save();
     }
 
     public void incrementPlayer() {
-        globalCounter++;
-        playerCounter++;
+        globalCounter.incrementAndGet();
+        playerCounter.incrementAndGet();
         save();
     }
 
     private void save() {
         Bukkit.getAsyncScheduler().runNow(BetterReports.getInstance(), (task) -> {
             try {
-                final String str = "G: " + globalCounter + "\nB: " + bugCounter + "\nP: " + playerCounter;
+                final String str = "G: " + globalCounter.get() + "\nB: " + bugCounter.get() + "\nP: "
+                        + playerCounter.get();
                 Files.write(file.toPath(), str.getBytes(StandardCharsets.UTF_8));
             } catch (final Exception exception) {
                 exception.printStackTrace();
@@ -79,14 +82,14 @@ public class Counter {
         try (final Stream<String> lines = Files.lines(file.toPath())) {
             final List<String> data = lines.map(str -> str.substring(3)).collect(Collectors.toList());
 
-            globalCounter = Integer.parseInt(data.get(0));
-            bugCounter = Integer.parseInt(data.get(1));
-            playerCounter = Integer.parseInt(data.get(2));
+            globalCounter.set(Integer.parseInt(data.get(0)));
+            bugCounter.set(Integer.parseInt(data.get(1)));
+            playerCounter.set(Integer.parseInt(data.get(2)));
 
         } catch (final Exception exception) {
-            globalCounter = -1;
-            bugCounter = -1;
-            playerCounter = -1;
+            globalCounter.set(-1);
+            bugCounter.set(-1);
+            playerCounter.set(-1);
 
             exception.printStackTrace();
         }

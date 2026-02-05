@@ -4,6 +4,7 @@ api-version: '1.21'
 folia-supported: true
 main: dev.austech.betterreports.BetterReports
 description: Reporting plugin with Discord webhook
+authors: [AusTech Development, siberanka]
 commands:
   report:
     description: Report something!

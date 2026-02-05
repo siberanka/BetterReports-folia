@@ -71,7 +71,7 @@ public class Report {
             return;
         }
 
-        ReportManager.getInstance().getReports().add(this);
+        ReportManager.getInstance().addReport(this);
         ReportManager.getInstance().addCooldown(creator, type);
         DiscordManager.getInstance().sendReport(creator, this);
     }

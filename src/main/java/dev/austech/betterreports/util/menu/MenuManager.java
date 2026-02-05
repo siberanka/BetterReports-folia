@@ -32,11 +32,12 @@ import java.util.Map;
 import java.util.UUID;
 
 public class MenuManager {
-    public static final Map<UUID, Menu> OPENED_MENUS = new HashMap<>();
-    public static final Map<UUID, ScheduledTask> CHECK_TASKS = new HashMap<>();
+    public static final Map<UUID, Menu> OPENED_MENUS = new java.util.concurrent.ConcurrentHashMap<>();
+    public static final Map<UUID, ScheduledTask> CHECK_TASKS = new java.util.concurrent.ConcurrentHashMap<>();
 
     public static void cancelTask(final Player player) {
-        if (!MenuManager.CHECK_TASKS.containsKey(player.getUniqueId())) return;
+        if (!MenuManager.CHECK_TASKS.containsKey(player.getUniqueId()))
+            return;
 
         MenuManager.CHECK_TASKS.get(player.getUniqueId()).cancel();
         MenuManager.CHECK_TASKS.remove(player.getUniqueId());

@@ -41,6 +41,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
+import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
 
 public class DiscordManager {
     @Getter
@@ -79,7 +80,7 @@ public class DiscordManager {
         }
 
         // Send Webhook Async
-        Bukkit.getAsyncScheduler().runNow(BetterReports.getInstance(), (task) -> {
+        Bukkit.getAsyncScheduler().runNow((org.bukkit.plugin.Plugin) BetterReports.getInstance(), (task) -> {
             try {
                 final Webhook webhook = builder.build();
                 webhook.send(WEBHOOK_URI);
@@ -94,30 +95,33 @@ public class DiscordManager {
         });
 
         // Send In-Game Messages & Sounds on Global Region Scheduler (Safe for Folia)
-        Bukkit.getGlobalRegionScheduler().runNow(BetterReports.getInstance(), (task) -> {
-            // Send to creator
-            Arrays.stream(Common.color(PlaceholderUtil.applyPlaceholders(report, MESSAGES_SUCCESS)).split("\\n"))
-                    .forEach(player::sendMessage);
+        Bukkit.getGlobalRegionScheduler().execute((org.bukkit.plugin.Plugin) BetterReports.getInstance(),
+                (Runnable) () -> {
+                    // Send to creator
+                    Arrays.stream(
+                            Common.color(PlaceholderUtil.applyPlaceholders(report, MESSAGES_SUCCESS)).split("\\n"))
+                            .forEach(player::sendMessage);
 
-            // Send to admins
-            Arrays.stream(Common.color(PlaceholderUtil.applyPlaceholders(report, MESSAGES_NEW_REPORT)).split("\\n"))
-                    .forEach((s) -> Bukkit.getOnlinePlayers()
-                            .stream()
-                            .filter(p -> p.hasPermission("betterreports.alerts"))
-                            .forEach(p -> p.sendMessage(s)));
+                    // Send to admins
+                    Arrays.stream(
+                            Common.color(PlaceholderUtil.applyPlaceholders(report, MESSAGES_NEW_REPORT)).split("\\n"))
+                            .forEach((s) -> Bukkit.getOnlinePlayers()
+                                    .stream()
+                                    .filter(p -> p.hasPermission("betterreports.alerts"))
+                                    .forEach(p -> p.sendMessage(s)));
 
-            // Play sound
-            GuiConfig.Values.SOUNDS_REPORT_SUCCESS.playSound(player);
+                    // Play sound
+                    GuiConfig.Values.SOUNDS_REPORT_SUCCESS.playSound(player);
 
-            // Increment counter
-            if (BetterReports.getInstance().getCounter() != null) {
-                if (!report.isPlayer()) {
-                    BetterReports.getInstance().getCounter().incrementBug();
-                } else {
-                    BetterReports.getInstance().getCounter().incrementPlayer();
-                }
-            }
-        });
+                    // Increment counter
+                    if (BetterReports.getInstance().getCounter() != null) {
+                        if (!report.isPlayer()) {
+                            BetterReports.getInstance().getCounter().incrementBug();
+                        } else {
+                            BetterReports.getInstance().getCounter().incrementPlayer();
+                        }
+                    }
+                });
     }
 
     private String ap(final Report report, final String s) {

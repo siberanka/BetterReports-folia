@@ -71,8 +71,9 @@ public class InputListener implements Listener {
             return;
         }
 
+        final String finalInput = input;
         // Execute callback on the player's thread context to be safe with UI/Bukkit API
-        player.getScheduler().run(BetterReports.getInstance(), (task) -> callback.accept(input), null);
+        player.getScheduler().run(BetterReports.getInstance(), (task) -> callback.accept(finalInput), null);
     }
 
     @EventHandler

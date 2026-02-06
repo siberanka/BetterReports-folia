@@ -134,7 +134,8 @@ public class GuiConfig extends ConfigurationFile {
             if (section == null)
                 return null;
 
-            Material material = Material.matchMaterial(section.getString("material"));
+            String materialName = section.getString("material");
+            Material material = materialName != null ? Material.matchMaterial(materialName) : null;
             if (material == null)
                 material = Material.STONE; // Fallback
 

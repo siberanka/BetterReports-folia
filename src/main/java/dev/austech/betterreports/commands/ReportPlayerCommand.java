@@ -24,6 +24,7 @@
 
 package dev.austech.betterreports.commands;
 
+import dev.austech.betterreports.BetterReports;
 import dev.austech.betterreports.model.report.Report;
 import dev.austech.betterreports.model.report.menu.creation.ConfirmReportMenu;
 import dev.austech.betterreports.model.report.menu.creation.SelectPlayerMenu;
@@ -90,10 +91,10 @@ public class ReportPlayerCommand implements CommandExecutor {
         final String targetName = args[0];
         final String reason = String.join(" ", Arrays.asList(args).subList(1, args.length));
 
-        Bukkit.getAsyncScheduler().runNow(BetterReports.getInstance(), (task) -> {
+        Bukkit.getAsyncScheduler().runNow((org.bukkit.plugin.Plugin) BetterReports.getInstance(), (task) -> {
             final OfflinePlayer target = OfflinePlayerUtil.get(targetName);
 
-            playerSender.getScheduler().run(BetterReports.getInstance(), (st) -> {
+            playerSender.getScheduler().run((org.bukkit.plugin.Plugin) BetterReports.getInstance(), (st) -> {
                 if (target == null) {
                     MainConfig.Values.LANG_PLAYER_NOT_FOUND.send(playerSender);
                     return;

@@ -27,13 +27,13 @@ package dev.austech.betterreports.util.menu;
 import org.bukkit.entity.Player;
 import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class MenuManager {
-    public static final Map<UUID, Menu> OPENED_MENUS = new java.util.concurrent.ConcurrentHashMap<>();
-    public static final Map<UUID, ScheduledTask> CHECK_TASKS = new java.util.concurrent.ConcurrentHashMap<>();
+    public static final Map<UUID, Menu> OPENED_MENUS = new ConcurrentHashMap<>();
+    public static final Map<UUID, ScheduledTask> CHECK_TASKS = new ConcurrentHashMap<>();
 
     public static void cancelTask(final Player player) {
         if (!MenuManager.CHECK_TASKS.containsKey(player.getUniqueId()))
@@ -41,5 +41,18 @@ public class MenuManager {
 
         MenuManager.CHECK_TASKS.get(player.getUniqueId()).cancel();
         MenuManager.CHECK_TASKS.remove(player.getUniqueId());
+    }
+
+    public static void closeAll() {
+        for (UUID uuid : OPENED_MENUS.keySet()) {
+            Player player = org.bukkit.Bukkit.getPlayer(uuid);
+            if (player != null) {
+                player.closeInventory();
+            }
+        }
+        OPENED_MENUS.clear();
+
+        CHECK_TASKS.values().forEach(ScheduledTask::cancel);
+        CHECK_TASKS.clear();
     }
 }

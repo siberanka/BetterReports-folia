@@ -56,6 +56,11 @@ public class BetterReports extends JavaPlugin {
     private ConfigManager configManager;
 
     @Override
+    public void onDisable() {
+        dev.austech.betterreports.util.menu.MenuManager.closeAll();
+    }
+
+    @Override
     public void onEnable() {
         instance = this;
         configManager = new ConfigManager();

@@ -77,7 +77,8 @@ public class PlayerReportPagedReasonMenu extends PagedMenu {
         final AtomicInteger index = new AtomicInteger();
 
         reasons.forEach(reason -> {
-            Material material = Material.matchMaterial(reason.get("material").toString());
+            Object materialObj = reason.get("material");
+            Material material = materialObj != null ? Material.matchMaterial(materialObj.toString()) : null;
             if (material == null)
                 material = Material.STONE;
             final StackBuilder stack = StackBuilder.create(material)
